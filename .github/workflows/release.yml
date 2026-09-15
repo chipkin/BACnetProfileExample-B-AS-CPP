@@ -1,4 +1,4 @@
-# Build the B-ASC example against the CAS BACnet Stack STATIC library and publish a GitHub
+# Build the B-AS example against the CAS BACnet Stack STATIC library and publish a GitHub
 # Release (binaries + metrics.json) when a vX.Y.Z tag is pushed. PRs and pushes to main run
 # the same build + smoke test without publishing.
 #
@@ -27,13 +27,13 @@ jobs:
           # windows-2022, not windows-latest: the stack's vcxproj names the v143 (VS 2022)
           # toolset; newer images may not carry it.
           - os: windows-2022
-            artifact: BACnetExampleBASC-windows-x64
-            exe: build/Release/BACnetExampleBASC.exe
+            artifact: BACnetExampleBAS-windows-x64
+            exe: build/Release/BACnetExampleBAS.exe
             lib: submodules/cas-bacnet-stack/bin/CASBACnetStack_x64_Release.lib
             metrics: metrics-windows.json
           - os: ubuntu-latest
-            artifact: BACnetExampleBASC-linux-x64
-            exe: build/BACnetExampleBASC
+            artifact: BACnetExampleBAS-linux-x64
+            exe: build/BACnetExampleBAS
             lib: submodules/cas-bacnet-stack/bin/libCASBACnetStack_x64_Release.a
             metrics: metrics-linux.json
     steps:
@@ -125,7 +125,7 @@ jobs:
           [ -n "$compiler" ] || compiler="$(grep -E '^CMAKE_GENERATOR:' build/CMakeCache.txt | cut -d= -f2 || true) ${{ matrix.os }}"
           cat > "${{ matrix.metrics }}" <<EOF
           {
-            "example": "BACnetExampleBASC",
+            "example": "BACnetExampleBAS",
             "app_version": "$appver",
             "os": "${{ matrix.os }}",
             "link_mode": "STATIC",

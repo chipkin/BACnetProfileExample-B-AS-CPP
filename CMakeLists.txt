@@ -1,5 +1,5 @@
 # =============================================================================
-# CMake build for the BACnet B-ASC (Application Specific Controller) C++ example.
+# CMake build for the BACnet B-AS (Authorization Server) C++ example.
 #
 # This example links the CAS BACnet Stack through the CASBACnetStack::Adapter CMake
 # target (submodules/cas-bacnet-stack/adapters/cpp) and calls the stack's C API
@@ -11,16 +11,16 @@
 # executable with no separate library build; this example is not built that way.)
 #
 # Build:
-#   tools/build-stack-static.sh BACnetProfileExample-B-ASC-CPP   (from the series root)
+#   tools/build-stack-static.sh BACnetProfileExample-B-AS-CPP   (from the series root)
 #   cmake -B build -S . -DCAS_BACNET_STACK_LINK=STATIC
 #   cmake --build build --config Release --parallel
 # Run (from the example folder):
-#   ./build/BACnetExampleBASC          (Linux/macOS)
-#   .\build\Release\BACnetExampleBASC.exe   (Windows)
+#   ./build/BACnetExampleBAS          (Linux/macOS)
+#   .\build\Release\BACnetExampleBAS.exe   (Windows)
 # =============================================================================
 
 cmake_minimum_required(VERSION 3.15)
-project(BACnetProfileExample_CPP_B_ASC CXX C)
+project(BACnetProfileExample_CPP_B_AS CXX C)
 
 
 # Default to a Release build.
@@ -71,14 +71,14 @@ set(COMMON_SOURCES
     "${EXAMPLES_COMMON_DIR}/SimpleUDP.cpp")
 
 # --- The executable ---------------------------------------------------------
-add_executable(BACnetExampleBASC
+add_executable(BACnetExampleBAS
     main.cpp
     ${COMMON_SOURCES})
 
-target_include_directories(BACnetExampleBASC PRIVATE
+target_include_directories(BACnetExampleBAS PRIVATE
     "${EXAMPLES_COMMON_DIR}")
 
-target_link_libraries(BACnetExampleBASC PRIVATE CASBACnetStack::Adapter)
+target_link_libraries(BACnetExampleBAS PRIVATE CASBACnetStack::Adapter)
 
 # --- Warnings on OUR sources only -------------------------------------------
 # Apply strict warnings to the example + helper sources, but NOT to the bundled
@@ -95,5 +95,5 @@ set_source_files_properties(main.cpp ${COMMON_SOURCES}
 # --- Platform sockets -------------------------------------------------------
 # ws2_32  = Winsock (UDP); iphlpapi = GetAdaptersInfo (local broadcast address).
 if(WIN32)
-    target_link_libraries(BACnetExampleBASC PRIVATE ws2_32 iphlpapi)
+    target_link_libraries(BACnetExampleBAS PRIVATE ws2_32 iphlpapi)
 endif()
