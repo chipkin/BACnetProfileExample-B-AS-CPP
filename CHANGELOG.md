@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Restructured documentation to match the series' README + TUTORIAL + PICS
+  shape: `README.md` cut down to this example only (series-framing, the
+  generic profile explanation, "What the profile requires" prose, "Before you
+  ship", "Get the code", "Link mode", "Troubleshooting", "Extending the
+  example", "Objects and properties", and the CC0 paragraph all removed or
+  moved out); added `TUTORIAL.md` (extending the example, per-object-type
+  serving checklist, "who serves what", reviewing your device, and
+  troubleshooting - including the DeviceCommunicationControl and AA-AS-B
+  entries); added `docs/PICS.md` (ANSI/ASHRAE 135 Annex A shape, with a Device
+  object added to `docs/objects.json` as the generator's first entry).
+- Switched the documented build from a prebuilt **STATIC** library
+  (`tools/build-stack-static.sh`) to the adapter's default **SOURCE** mode:
+  `cmake -B build -S .` / `cmake --build build --config Release`, identical on
+  every platform and matching every other repository in the series.
+  `CMakeLists.txt`'s header comment, `AGENTS.md`, and
+  `.github/workflows/release.yml` (link-mode assertion, metrics JSON, matrix
+  `lib:` entries, and packaged artifact list) updated to match.
+- The `## Footprint` numbers still reflect the v1.0.0 STATIC-library build;
+  the table now notes that the next release refreshes them under the
+  documented SOURCE build.
+
 ## [1.0.0] - 2026-09-15
 
 ### Added
