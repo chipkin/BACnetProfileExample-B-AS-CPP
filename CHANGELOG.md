@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - unreleased
+
+### Fixed
+
+- **`Application_Software_Version` (12) and `Firmware_Revision` (44) were
+  hardcoded and stale** - both were literal `"1.0.0"` string constants
+  (`APPLICATION_SOFTWARE_VERSION` and `FIRMWARE_REVISION` in `main.cpp`)
+  that never tracked the example's real version as it advanced, and
+  `Firmware_Revision` was never meant to be this example's own version at
+  all - it names the underlying platform. Fixed the same way as the
+  identical bug in the B-SCHUB-CPP example:
+  `Application_Software_Version` now reads `APP_VERSION` directly (one
+  source of truth, can't drift from `--version`'s own banner again), and
+  the separate stale `APPLICATION_SOFTWARE_VERSION` constant was removed.
+  `Firmware_Revision` is now built at runtime from the CAS BACnet Stack's
+  own `BACnetStack_GetAPIMajorVersion()`/`GetAPIMinorVersion()`/
+  `GetAPIPatchVersion()`/`GetAPIBuildVersion()` (the same 4 calls
+  `common/CASExampleHelper.cpp`'s `PrintVersion()` already uses for the
+  startup banner), populated once into `g_firmwareRevision` right after
+  `LoadBACnetFunctions()` succeeds; the old hardcoded `FIRMWARE_REVISION`
+  constant was removed.
 
 ### Changed
 
