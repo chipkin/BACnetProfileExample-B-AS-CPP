@@ -66,7 +66,7 @@ Interactive keys while running: `h` help, `q` quit, up/down nudge Analog Input 1
 
 ## Conventions
 
-- Device is named "Rainbow"; objects use the series' colour names; vendor id 389.
+- Device is named "Chipkin Example B-AS"; objects use the series' colour names; vendor id 389.
 - Implement **only** the services and objects the profile's implemented BIBBs
   require - but expose **every required property** of each object for
   Protocol_Revision 24. This repo intentionally does NOT enable WriteProperty

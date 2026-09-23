@@ -49,7 +49,7 @@ set it to require one.
 ## The device this example creates
 
 ```
-Device 389023  "Rainbow"   (Vendor 389 - Chipkin Automation Systems)
+Device 389023  "Chipkin Example B-AS"   (Vendor 389 - Chipkin Automation Systems)
     │
     ├── Analog Input 1       "Bronze"      Present_Value  21.5    (REAL, degrees Celsius)
     ├── Binary Input 1       "Emerald"     Present_Value  inactive  (0 = inactive / 1 = active)
@@ -106,7 +106,7 @@ including the exact header comments, is in [TODO.md](TODO.md). Stack issue:
 
 | Object type | Instance | Name |
 |-------------|:--------:|------|
-| Device | 389023 | Rainbow |
+| Device | 389023 | Chipkin Example B-AS |
 | Analog Input | 1 | Bronze |
 | Binary Input | 1 | Emerald |
 | Multi-State Input | 1 | Hot Pink |
@@ -203,7 +203,7 @@ CAS BACnet Stack version: 6.0.21.0
 Common helper (common/) version: 2.5.0
 FYI: Listening for BACnet/IP on UDP port 47808 (Network Port 1).
 TX 21 bytes to 192.168.3.255:47808 (broadcast) (Network Port 1)
-FYI: Device 389023 ("Rainbow") ready. Vendor ID 389. Press 'h' for help.
+FYI: Device 389023 ("Chipkin Example B-AS") ready. Vendor ID 389. Press 'h' for help.
 ```
 
 The `TX` line is the start-up I-Am the device broadcasts to announce itself. It
@@ -253,10 +253,10 @@ Use a BACnet client such as the
 2. **Who-Has / I-Have** - send a **Who-Has** for object name `Bronze`. The
    device replies with **I-Have**.
 3. **Browse the object model** - the device shows five objects: the Device
-   (`Rainbow`), the three sensors, and the Network Port (`Vermilion`). Reading
+   (`Chipkin Example B-AS`), the three sensors, and the Network Port (`Vermilion`). Reading
    the Device's `Object_List` returns all five.
 4. **Read the Device** - ReadProperty `389023` -> `Object_Name` returns
-   `"Rainbow"`; `Protocol_Revision` returns `24`; `Description` returns the
+   `"Chipkin Example B-AS"`; `Protocol_Revision` returns `24`; `Description` returns the
    profile description string; `Protocol_Services_Supported` lists
    `read-property`, `device-communication-control`, `i-am`, `i-have`,
    `who-has`, `who-is` - and nothing else.
