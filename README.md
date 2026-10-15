@@ -1,5 +1,22 @@
 # BACnet B-AS (Authorization Server) - C++ example
 
+> **Blocked Example.** The CAS BACnet Stack cannot yet perform the B-AS
+> Profile Function - issuing access tokens to authorization clients
+> (ASHRAE 135-2024 Annex L.14.1, Clause 17) - through its customer interface,
+> so this example stays published but is **blocked** on that stack gap
+> ([cas-bacnet-stack#2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043)).
+> At stack `6.x` @ `64b2cfac5` the AuthRequest service handler and the
+> authorization-policy exports compile only into the stack's test-tool build,
+> so a customer build refuses AuthRequest and has no way to configure a policy;
+> on 2026-10-15 the stack owner ruled that they are not promoted to the
+> customer interface for now. What it does today:
+>
+> - It is a discoverable BACnet/IP device that serves its Device, Network Port
+>   and three sensor objects to any client - ReadProperty, Who-Is/I-Am,
+>   Who-Has/I-Have and DeviceCommunicationControl (the profile's DS/DM base).
+> - It does **not** answer AuthRequest and issues no tokens. AA-AS-B is not
+>   claimed.
+
 A minimal, copy-paste-friendly example showing how to implement the BACnet
 **B-AS (BACnet Authorization Server)** device profile's **DS/DM base** in C++
 using the
@@ -20,18 +37,19 @@ This example claims **only** the B-AS profile's DS/DM base - see
 [What this example supports](#what-this-example-supports) for the one BIBB
 (AA-AS-B) it does not implement, and why.
 
-> **Versions:** this document describes **example v1.0.0**, built and verified
-> against **CAS BACnet Stack 6.0.21** (`6.x` @ `abd4cee1`), at
-> **Protocol_Revision 24**, with the vendored `common/` helper at **v2.5.0**.
+> **Versions:** this document describes **example v1.1.0**, built and verified
+> against **CAS BACnet Stack 6.0.23** (`6.x` @ `64b2cfac5`), at
+> **Protocol_Revision 30**, with the vendored `common/` helper at **v3.3.0**.
 > Running the example prints all three - if what it prints disagrees with this
 > line, trust the program and check `CHANGELOG.md`.
 
 ## What is the B-AS (Authorization Server) profile?
 
-**B-AS (BACnet Authorization Server)**, defined in Annex L.14 of ANSI/ASHRAE
-135, is the device that other BACnet devices ask to authorize an access
-request - the server side of the Access Authorization exchange defined in
-Clause 17.
+**B-AS (BACnet Authorization Server)**, defined in Annex L.14.1 of
+ANSI/ASHRAE 135-2024, is "an authorization server that issues access tokens to
+authorization clients or their helpers" (Clause 17): the server side of the
+AuthRequest exchange. L.14.1 also requires a persistent database of access
+policies and a user interface for configuring them.
 
 ## DeviceCommunicationControl (DM-DCC-B)
 
@@ -40,7 +58,7 @@ Clause 17.
 CAS BACnet Stack runs the actual enable/disable state machine (and the
 optional re-enable timer); this example's `DeviceCommunicationControl`
 callback in `main.cpp` validates the optional password and logs what was
-asked. At Protocol_Revision 24 the plain "disable" value is deprecated - the
+asked. At Protocol_Revision 30 the plain "disable" value is deprecated - the
 stack itself rejects it and only `enable` and `disable-initiation` take
 effect - see the callback's comments in `main.cpp` for the full detail. This
 example's password is empty (`DCC_PASSWORD = ""`), so it accepts any request;
@@ -77,20 +95,17 @@ honestly-documented gap.
 | DM-DDB-B | Device Management - Dynamic Device Binding - B | ✅ |
 | DM-DOB-B | Device Management - Dynamic Object Binding - B | ✅ |
 | DM-DCC-B | Device Management - DeviceCommunicationControl - B | ✅ |
-| AA-AS-B | Access Authorization - B | ❌ **waiting on stack export** - see [TODO.md](TODO.md) |
+| AA-AS-B | Authorization - Authorization Server - B | ❌ **blocked on [stack #2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043)** - see [TODO.md](TODO.md) |
 
-**AA-AS-B: waiting on stack export `BACnetStack_AddAuthorizationPolicy`** (and
-its siblings `SetAuthorizationPolicyEntry`, `SetAuthorizationPolicyEnabled`,
-`AddAuthorizationCache`, `InsertAuthorizationToken`). At the series pin
-(`abd4cee1c7f28ca8e1af4720849c4081082bbe82`, 6.0.21) those exports exist only
-in `CASBACnetStackTestToolDLL.h`, gated behind `BACNET_STACK_TESTTOOL` - the
-stack header itself says they are "a distinct feature that lives on the
-test-tool interface," not the customer-facing `CASBACnetStackDLL.h` this
-series builds against (see the series' "Customer-facing interface only" rule).
-Without a way to seed an Authorization Policy, there is nothing for an
-Access-Authorization request to be evaluated against, so AA-AS-B cannot be
-executed through the customer DLL surface at this pin. Full evidence,
-including the exact header comments, is in [TODO.md](TODO.md). Stack issue:
+**AA-AS-B: blocked on the stack.** At the Stack Pin (`6.x` @ `64b2cfac5`,
+6.0.23) the policy exports (`BACnetStack_AddAuthorizationPolicy`,
+`SetAuthorizationPolicyEntry`, `SetAuthorizationPolicyEnabled`) exist only in
+`CASBACnetStackTestToolDLL.h`, and the AuthRequest service handler itself
+(`BACnetAuthRequestProcessor`) compiles only with `BACNET_STACK_TESTTOOL`. A
+customer build - the only kind this series uses - therefore refuses AuthRequest
+and cannot configure a policy for it to be evaluated against. The stack owner
+ruled on 2026-10-15 that these are not promoted to the customer interface for
+now. Full evidence is in [TODO.md](TODO.md). Stack issue:
 [chipkin/cas-bacnet-stack#2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043).
 
 ### Services (executed / B-side)
@@ -141,6 +156,8 @@ This is a **self-contained** project. It ships:
 - `CMakeLists.txt` - the build, the same on Windows, Linux, and macOS.
 - `docs/PICS.md` - the conformance statement.
 - `TODO.md` - the AA-AS-B gap, with evidence and the filed stack issue.
+- `tests/` - the Wire Tests (see [Wire Tests](#wire-tests)), and `wiretest/`, the
+  series' shared Python harness they are written against (vendored, like `common/`).
 - `submodules/cas-bacnet-stack/` - the **CAS BACnet Stack as a git submodule**
   (private; requires a license - see above). Its sources are compiled into the
   executable, so there is no library or DLL to build, ship, or install.
@@ -198,11 +215,11 @@ CMake at it: `cmake -B build -S . -D CAS_STACK_DIR=/path/to/cas-bacnet-stack`.
 Expected output:
 
 ```
-BACnet Authorization Server (B-AS) Example - C++ v1.0.0
-CAS BACnet Stack version: 6.0.21.0
-Common helper (common/) version: 2.5.0
+BACnet Authorization Server (B-AS) Example - C++ v1.1.0
+CAS BACnet Stack version: 6.0.23.0
+Common helper (common/) version: 3.3.0
 FYI: Listening for BACnet/IP on UDP port 47808 (Network Port 1).
-TX 21 bytes to 192.168.3.255:47808 (broadcast) (Network Port 1)
+TX 21 bytes to 192.168.3.255:47808 (broadcast) (Network Port 1) - Unconfirmed: I-Am
 FYI: Device 389023 ("Chipkin Example B-AS") ready. Vendor ID 389. Press 'h' for help.
 ```
 
@@ -256,7 +273,7 @@ Use a BACnet client such as the
    (`Chipkin Example B-AS`), the three sensors, and the Network Port (`Vermilion`). Reading
    the Device's `Object_List` returns all five.
 4. **Read the Device** - ReadProperty `389023` -> `Object_Name` returns
-   `"Chipkin Example B-AS"`; `Protocol_Revision` returns `24`; `Description` returns the
+   `"Chipkin Example B-AS"`; `Protocol_Revision` returns `30`; `Description` returns the
    profile description string; `Protocol_Services_Supported` lists
    `read-property`, `device-communication-control`, `i-am`, `i-have`,
    `who-has`, `who-is` - and nothing else.
@@ -273,11 +290,29 @@ Use a BACnet client such as the
 For a property-by-property review against the conformance statement, see
 [TUTORIAL.md](TUTORIAL.md).
 
+## Wire Tests
+
+Part of the checks above, automated: a Python BACnet client drives the running
+example over BACnet/IP from outside it, the way a client discovers a device -
+Who-Is, the Device's `Object_List`, then for every object its `Property_List` and
+a ReadProperty of every property it lists. Every read must come back as a value;
+an Error, Reject or Abort fails the run. Python 3 standard library only:
+
+```bash
+python3 tests/run_wire_tests.py --exe build/BACnetExampleBAS          # Linux/macOS
+python tests\run_wire_tests.py --exe build\Release\BACnetExampleBAS.exe   # Windows
+```
+
+It ends with `ALL WIRE TESTS PASSED` (exit 0). CI runs it on Linux after the
+smoke test. [tests/README.md](tests/README.md) says what each check proves. It
+tests the DS/DM base only: there is no AuthRequest to test (see the Blocked
+Example note at the top).
+
 
 ## The BACnet profile example series
 
 <!-- PROFILE-TABLE:BEGIN (generated from cas-bacnet-stack-examples/docs/profile-table.md - do not edit here) -->
-The CAS BACnet Stack supports every standardized device profile in ASHRAE 135-2024 Annex L, and there is one example repository per profile. Pick the profile your device claims, then the language you build in. "Ask" means the example hasn't been built yet for that language - [contact Chipkin](https://store.chipkin.com/contact-us) if you need one.
+There is one example repository per standardized device profile in ASHRAE 135-2024 Annex L. An example marked ⛔ is blocked: the stack cannot yet perform that profile's function through its customer interface, and the example's README says what it does today. Pick the profile your device claims, then the language you build in. "Ask" means the example hasn't been built yet for that language - [contact Chipkin](https://store.chipkin.com/contact-us) if you need one.
 
 ### Controllers (Annex L.4)
 
@@ -322,7 +357,7 @@ The CAS BACnet Stack supports every standardized device profile in ASHRAE 135-20
 
 | Profile | C++ | Node.js | C# | Rust | Python | Go |
 |---|---|---|---|---|---|---|
-| **B-AS** Authorization Server | [B-AS-CPP](https://github.com/chipkin/BACnetProfileExample-B-AS-CPP) | Ask | Ask | Ask | Ask | Ask |
+| **B-AS** Authorization Server | [B-AS-CPP](https://github.com/chipkin/BACnetProfileExample-B-AS-CPP) ⛔ blocked on [stack #2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043) | Ask | Ask | Ask | Ask | Ask |
 
 ### Miscellaneous (Annex L.7, combinable with any one family)
 
@@ -330,10 +365,10 @@ The CAS BACnet Stack supports every standardized device profile in ASHRAE 135-20
 |---|---|---|---|---|---|---|
 | **B-BBMD** Broadcast Management Device | [B-BBMD-CPP](https://github.com/chipkin/BACnetProfileExample-B-BBMD-CPP) | Ask | Ask | Ask | Ask | Ask |
 | **B-ACDC** Access Control Door Controller | [B-ACDC-CPP](https://github.com/chipkin/BACnetProfileExample-B-ACDC-CPP) | Ask | Ask | Ask | Ask | Ask |
-| **B-ACCR** Access Control Credential Reader | [B-ACCR-CPP](https://github.com/chipkin/BACnetProfileExample-B-ACCR-CPP) | Ask | Ask | Ask | Ask | Ask |
+| **B-ACCR** Access Control Credential Reader | [B-ACCR-CPP](https://github.com/chipkin/BACnetProfileExample-B-ACCR-CPP) ⛔ blocked on [stack #3934](https://github.com/chipkin/cas-bacnet-stack/issues/3934) | Ask | Ask | Ask | Ask | Ask |
 | **B-RTR** Router | [B-RTR-CPP](https://github.com/chipkin/BACnetProfileExample-B-RTR-CPP) | Ask | Ask | Ask | Ask | Ask |
 | **B-GW** Gateway | [B-GW-CPP](https://github.com/chipkin/BACnetProfileExample-B-GW-CPP) | Ask | Ask | Ask | Ask | Ask |
-| **B-DAP** Device Address Proxy | [B-DAP-CPP](https://github.com/chipkin/BACnetProfileExample-B-DAP-CPP) | Ask | Ask | Ask | Ask | Ask |
+| **B-DAP** Device Address Proxy | [B-DAP-CPP](https://github.com/chipkin/BACnetProfileExample-B-DAP-CPP) ⛔ blocked on [stack #2032](https://github.com/chipkin/cas-bacnet-stack/issues/2032) | Ask | Ask | Ask | Ask | Ask |
 | **B-SCHUB** BACnet/SC Hub | [B-SCHUB-CPP](https://github.com/chipkin/BACnetProfileExample-B-SCHUB-CPP) | Ask | Ask | Ask | Ask | Ask |
 | **B-GENERAL** General device (Annex L.8) | *(satisfied by every example above)* | — | — | — | — | — |
 
@@ -361,7 +396,7 @@ Client-side profiles.
 | **B-EWS** Elevator Workstation | planned | — | — | — | — | — |
 | **B-AEWS** Advanced Elevator Workstation | planned | — | — | — | — | — |
 
-🚧 = in progress. "Ask" = not yet built for that language; contact Chipkin if you need it. Profile definitions: ANSI/ASHRAE 135-2024 Annex L. BIBB definitions: Annex K. Get the stack: <https://store.chipkin.com/services/stacks/bacnet-stack>.
+🚧 = in progress. ⛔ = Blocked Example (blocked on the named stack gap). "Ask" = not yet built for that language; contact Chipkin if you need it. Profile definitions: ANSI/ASHRAE 135-2024 Annex L. BIBB definitions: Annex K. Get the stack: <https://store.chipkin.com/services/stacks/bacnet-stack>.
 <!-- PROFILE-TABLE:END -->
 
 ## References

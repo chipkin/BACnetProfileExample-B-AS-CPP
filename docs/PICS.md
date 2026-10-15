@@ -18,23 +18,26 @@ see [README.md](../README.md).
 | **Vendor Identifier** | 389 |
 | **Product Name** | CAS BACnet Stack Example - B-AS |
 | **Product Model Number** | CAS BACnet Stack Example - B-AS |
-| **Application Software Version** | 1.0.0 |
-| **Firmware Revision** | 1.0.0 |
+| **Application Software Version** | 1.1.0 |
+| **Firmware Revision** | 6.0.23.0 (the CAS BACnet Stack version) |
 | **BACnet Protocol Version** | 1 |
-| **BACnet Protocol Revision** | 24 |
+| **BACnet Protocol Revision** | 30 |
 
 **Product Description:** a BACnet/IP device demonstrating the B-AS
 (Authorization Server) profile's DS/DM base. It presents three read-only
 sensor objects (Analog Input, Binary Input, Multi-State Input), answers
 ReadProperty for every required property of every object, is discoverable by
 Who-Is / I-Am and Who-Has / I-Have, and responds to
-DeviceCommunicationControl. It does **not** implement AA-AS-B (Access
-Authorization) - see section 3 and [TODO.md](../TODO.md). It is a tutorial for
+DeviceCommunicationControl. It does **not** implement AA-AS-B (Authorization
+Server - B) - see section 3 and [TODO.md](../TODO.md). It is a tutorial for
 implementers of the B-AS profile.
 
 ## 2. BACnet standardized device profile (Annex L)
 
-**B-AS - BACnet Authorization Server.**
+**B-AS - BACnet Authorization Server.** This is a **Blocked Example**: the
+stack cannot yet perform the B-AS Profile Function (issuing access tokens,
+Annex L.14.1) through its customer interface - stack
+[#2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043).
 
 This device claims the B-AS profile's DS/DM base - **not the full profile**,
 because AA-AS-B is not implemented (see section 3). Because the implemented
@@ -49,18 +52,17 @@ BIBBs are a superset of B-GENERAL's, this device also satisfies
 | DM-DDB-B | Device Management - Dynamic Device Binding - B | yes |
 | DM-DOB-B | Device Management - Dynamic Object Binding - B | yes |
 | DM-DCC-B | Device Management - DeviceCommunicationControl - B | yes |
-| AA-AS-B | Access Authorization - B | **no** |
+| AA-AS-B | Authorization Server - B (K.9.5) | **no** |
 
-**AA-AS-B is not implemented.** At the series pin
-(`abd4cee1c7f28ca8e1af4720849c4081082bbe82`, reports 6.0.21), the seeding
-exports an Authorization Server needs (`BACnetStack_AddAuthorizationPolicy`
-and siblings `SetAuthorizationPolicyEntry`, `SetAuthorizationPolicyEnabled`,
-`AddAuthorizationCache`, `InsertAuthorizationToken`) exist only in
-`CASBACnetStackTestToolDLL.h`, gated behind `BACNET_STACK_TESTTOOL` - not on
-the customer-facing `CASBACnetStackDLL.h` surface this series builds against.
-Without a way to seed an Authorization Policy, there is nothing for an
-Access-Authorization request to be evaluated against, so AA-AS-B cannot be
-executed through the customer DLL surface at this pin. Full evidence is in
+**AA-AS-B is not implemented.** At the Stack Pin (`6.x` @ `64b2cfac5`,
+6.0.23), the policy exports an Authorization Server needs
+(`BACnetStack_AddAuthorizationPolicy`, `SetAuthorizationPolicyEntry`,
+`SetAuthorizationPolicyEnabled`) exist only in `CASBACnetStackTestToolDLL.h`,
+and the AuthRequest service handler compiles only with
+`BACNET_STACK_TESTTOOL` - neither is on the customer-facing
+`CASBACnetStackDLL.h` surface this series builds against. A customer build
+refuses AuthRequest and has no policy to evaluate one against. The stack owner
+ruled on 2026-10-15 that these are not promoted for now. Full evidence is in
 [TODO.md](../TODO.md). Stack issue:
 [chipkin/cas-bacnet-stack#2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043).
 
@@ -90,15 +92,22 @@ checked when `DCC_PASSWORD` is configured (shipped empty, so any password is
 accepted).
 
 Any other confirmed service - including WriteProperty, ReadPropertyMultiple,
-and Access Authorization request PDUs - is rejected or unanswered. That is the
-profile boundary documented above, not a limitation to work around (except for
-Access Authorization, which is the AA-AS-B gap itself).
+and AuthRequest - is rejected or unanswered. That is the profile boundary
+documented above, not a limitation to work around (except for AuthRequest,
+which is the AA-AS-B gap itself).
 
 ## 5. Segmentation capability
 
-Segmentation is **not supported** in either direction
-(`Segmentation_Supported` = `no-segmentation`). `Max_APDU_Length_Accepted` is
-1476 octets, the BACnet/IP maximum.
+Segmentation is **supported in both directions**
+(`Segmentation_Supported` = `segmented-both`), by the stack: at `6.x` @
+`64b2cfac5` the customer build compiles `STACK_OPTION_SEGMENTATION` in (stack
+#2992), and this example keeps the stack's defaults - `Max_Segments_Accepted`
+16 and `APDU_Segment_Timeout` read on the wire. Table 12-13 footnote 1: "These
+properties are required if, and shall be present only if, segmentation of any
+kind is supported" - they are not rows in section 11 because its generator
+lists only unconditionally required properties. `Max_APDU_Length_Accepted` is
+1476 octets, the BACnet/IP maximum. (At the previous pin, `abd4cee1`, this
+example answered `no-segmentation`.)
 
 ## 6. Standard object types supported
 
@@ -123,6 +132,12 @@ time with `--port`.
 
 BBMD is not supported, Foreign Device registration is not supported, and
 BACnet/SC, MS/TP, Ethernet (Annex H) and PTP are not supported.
+
+The stack's Network Port object still lists its BACnet/IP properties in
+`Property_List` - including `IP_DNS_Server`, `FD_BBMD_Address` and
+`FD_Subscription_Lifetime` - and every one of them reads as a value
+(`FD_BBMD_Address` is a Null host, port 0: no BBMD configured). The Wire Tests
+read every listed property of every object.
 
 ## 8. Device address binding
 
@@ -164,7 +179,7 @@ Every object this example creates, and every REQUIRED property of each (per ANSI
 | Protocol_Object_Types_Supported | BACnetObjectTypesSupported | stack | no |
 | Object_List | BACnetARRAY[N] of BACnetObjectIdentifier | stack | no |
 | Max_APDU_Length_Accepted | Unsigned | stack default, accepted (`CAS_BACNET_DEVICE_DEFAULT_MAX_APDU_LENGTH_ACCEPTED`) | no |
-| Segmentation_Supported | BACnetSegmentation | stack default, accepted (`BACnetSegmentation::noSegmentation`) | no |
+| Segmentation_Supported | BACnetSegmentation | stack default, accepted (`BACnetSegmentation::segmentedBoth` with `STACK_OPTION_SEGME) | no |
 | APDU_Timeout | Unsigned | stack default, accepted (`CAS_BACNET_DEVICE_DEFAULT_APDU_TIMEOUT`) | no |
 | Number_Of_APDU_Retries | Unsigned | stack default, accepted (`CAS_BACNET_DEVICE_DEFAULT_NUMBER_OF_APDU_RETRIES`) | no |
 | Device_Address_Binding | BACnetLIST of BACnetAddressBinding | stack | no |

@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - unreleased
+
+### Changed
+
+- **Labelled a Blocked Example.** The B-AS Profile Function (AA-AS-B: issuing
+  access tokens with AuthRequest, ANSI/ASHRAE 135-2024 K.9.5 / L.14.1) cannot
+  be performed through the stack's customer interface: the AuthRequest handler
+  and the policy exports are test-tool only at the new pin, and the stack
+  owner ruled on 2026-10-15 that they are not promoted for now
+  ([stack #2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043)).
+  README, PICS, TODO.md and `main.cpp` say so and what the example does today.
+- **Stack Pin moved to `6.x` @ `64b2cfac5` (6.0.23)** from `abd4cee1` (6.0.21),
+  per the series rule that a pin moves to the latest `6.x` on any update. No
+  source change was needed.
+- **Protocol_Revision 24 -> 30** in the README, PICS, AGENTS.md and comments
+  (30 is the stack's default at the pin). Segmentation is now
+  `segmented-both`, by the stack (stack #2992); PICS section 5 updated.
+- **`common/` 3.0.0 -> 3.3.0**, copied verbatim from B-SS-CPP `b640a81`
+  (additive keys, and broadcasts with no connection string are sent).
+- The AA-AS-B BIBB is named as K.9.5 names it, "Authorization Server - B"
+  (was "Access Authorization - B"). README/PICS version lines were stale
+  (said v1.0.0, common/ 2.5.0); fixed. The sample start-up output now shows
+  the I-Am decode the program prints.
+
+### Added
+
+- **Discovery Wire Test** (`tests/discovery_test.py`, `tests/run_wire_tests.py`,
+  copied from B-SS-CPP `da3e96f`): Who-Is, Object_List, every object's
+  Property_List, and a ReadProperty of every listed property; any Error,
+  Reject, Abort or silence fails it. 11/11 on Windows and Linux at the new
+  pin. CI runs it on Linux after the smoke test.
+- `wiretest/` 0.5.0, the series' Python harness, vendored verbatim from
+  B-BBMD-CPP `75aedd8`.
+
 ## [1.0.2] - unreleased
 
 ### Changed
