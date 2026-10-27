@@ -58,8 +58,8 @@ commands above.
 ## Run
 
 ```bash
-./build/BACnetExampleBAS [--port 47808] [--deviceID 389023]   # Linux/macOS
-.\build\Release\BACnetExampleBAS.exe [--port 47808] [--deviceID 389023]   # Windows
+./build/BACnetExampleBAS [--port 47808] [--deviceID 389023] [--deviceName "Chipkin Example B-AS"]   # Linux/macOS
+.\build\Release\BACnetExampleBAS.exe [--port 47808] [--deviceID 389023] [--deviceName "Chipkin Example B-AS"]   # Windows
 ```
 
 Interactive keys while running: `h` help, `q` quit, up/down nudge Analog Input 1.

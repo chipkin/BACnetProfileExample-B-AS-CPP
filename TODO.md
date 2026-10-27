@@ -16,7 +16,7 @@ claimed and not faked.
 (stack PR #3937, commit `aeaa1a37e`): "This blocks the B-AS profile example
 (AA-AS-B) until it is done."
 
-**Evidence, re-checked 2026-10-15 at the Stack Pin `6.x` @ `64b2cfac5`
+**Evidence, re-checked 2026-10-26 at the Stack Pin `6.x` @ `69b6249f`
 (6.0.23):**
 
 - `submodules/cas-bacnet-stack/source/CASBACnetStackDLL.h` (the customer
@@ -33,6 +33,14 @@ claimed and not faked.
   and so is the `authRequest` dispatch in `BACnetConfirmedRequestProcessor.cpp`.
   A customer build therefore refuses AuthRequest even if the service bit were
   set.
+- New at `69b6249f`: the customer header's `BACnetStack_SetServiceEnabled`
+  documentation says AuthRequest is a service "which only a test-tool build
+  executes" (enabling it returns false), and the AuthRequest host hook the
+  stack added (`BACnetStackTestTool_RegisterCallbackProcessAuthRequest`) is a
+  test-tool export too.
+- On the wire (this example at `69b6249f`): Protocol_Services_Supported leaves
+  the auth-request bit clear, and an AuthRequest token-request (confirmed
+  service 34) is answered with Reject, unrecognized-service.
 
 The series builds against the customer-facing surface only (no
 `BACNET_STACK_TESTTOOL`, no `CASBACnetStackTestToolDLL.h`, no
@@ -63,3 +71,11 @@ grep -n "BACNET_STACK_TESTTOOL" submodules/cas-bacnet-stack/source/BACnetAuthReq
 `docs/profiles.md` in the series root says B-AS "flipped ✅" in an "S178 merge
 cash-out". That describes the stack's test-tool surface, not the customer
 interface this example uses; it does not hold for this example.
+
+## Coverage gaps the test tool still reports
+
+DeviceCommunicationControl rows 9.24.1.6, .8, .9 and .10 are skipped because the
+test tool has no trigger it can drive on a device that only sends I-Am and
+I-Have (ref: `chipkin/chipkin-bacnet-testing-tool#355`). The test tool has no
+AA-AS-B section, so the Profile Function itself is not measured. No BTL FAIL
+remains at this release.

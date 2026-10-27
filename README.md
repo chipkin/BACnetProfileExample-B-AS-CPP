@@ -5,7 +5,7 @@
 > (ASHRAE 135-2024 Annex L.14.1, Clause 17) - through its customer interface,
 > so this example stays published but is **blocked** on that stack gap
 > ([cas-bacnet-stack#2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043)).
-> At stack `6.x` @ `64b2cfac5` the AuthRequest service handler and the
+> At stack `6.x` @ `69b6249f` the AuthRequest service handler and the
 > authorization-policy exports compile only into the stack's test-tool build,
 > so a customer build refuses AuthRequest and has no way to configure a policy;
 > on 2026-10-15 the stack owner ruled that they are not promoted to the
@@ -38,8 +38,8 @@ This example claims **only** the B-AS profile's DS/DM base - see
 (AA-AS-B) it does not implement, and why.
 
 > **Versions:** this document describes **example v1.1.0**, built and verified
-> against **CAS BACnet Stack 6.0.23** (`6.x` @ `64b2cfac5`), at
-> **Protocol_Revision 30**, with the vendored `common/` helper at **v3.4.0**.
+> against **CAS BACnet Stack 6.0.23** (`6.x` @ `69b6249f`), at
+> **Protocol_Revision 30**, with the vendored `common/` helper at **v3.5.0**.
 > Running the example prints all three - if what it prints disagrees with this
 > line, trust the program and check `CHANGELOG.md`.
 
@@ -97,7 +97,7 @@ honestly-documented gap.
 | DM-DCC-B | Device Management - DeviceCommunicationControl - B | ✅ |
 | AA-AS-B | Authorization - Authorization Server - B | ❌ **blocked on [stack #2043](https://github.com/chipkin/cas-bacnet-stack/issues/2043)** - see [TODO.md](TODO.md) |
 
-**AA-AS-B: blocked on the stack.** At the Stack Pin (`6.x` @ `64b2cfac5`,
+**AA-AS-B: blocked on the stack.** At the Stack Pin (`6.x` @ `69b6249f`,
 6.0.23) the policy exports (`BACnetStack_AddAuthorizationPolicy`,
 `SetAuthorizationPolicyEntry`, `SetAuthorizationPolicyEnabled`) exist only in
 `CASBACnetStackTestToolDLL.h`, and the AuthRequest service handler itself
@@ -217,7 +217,7 @@ Expected output:
 ```
 BACnet Authorization Server (B-AS) Example - C++ v1.1.0
 CAS BACnet Stack version: 6.0.23.0
-Common helper (common/) version: 3.4.0
+Common helper (common/) version: 3.5.0
 FYI: Listening for BACnet/IP on UDP port 47808 (Network Port 1).
 TX 21 bytes to 192.168.3.255:47808 (broadcast) (Network Port 1) - Unconfirmed: I-Am
 FYI: Device 389023 ("Chipkin Example B-AS") ready. Vendor ID 389. Press 'h' for help.
@@ -243,6 +243,8 @@ firewall. To use a different port, pass `--port` (see below).
 |--------|---------|---------|
 | `--port <n>` | `47808` | UDP port to listen on (BACnet/IP). |
 | `--deviceID <n>` | `389023` | The device's BACnet instance number (BACnet requires this to be configurable). |
+| `--deviceName <text>` | `Chipkin Example B-AS` | The Device object's `Object_Name`, 1..255 bytes, no control characters. It must be unique across the BACnet internetwork, so give every unit its own (BACnet requires it to be configurable, like the instance). An invalid value prints a warning and keeps the default. |
+| `--xml` | off | Print every received and sent BACnet message as an indented XML block instead of a one-line summary (very verbose; for protocol debugging). |
 | `--help`, `-h` | - | Show usage and exit. |
 | `--version` | - | Print the example, stack, and `common/` helper versions, then exit. |
 
